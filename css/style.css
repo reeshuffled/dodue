@@ -1,0 +1,69 @@
+html {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+label {
+    font-weight: bold;
+}
+
+textarea:focus, input:focus{
+    outline: none;
+}
+
+.text-center {
+    text-align: center;
+}
+
+h3.title {
+    margin-bottom: .25em;
+}
+
+#taskAdd {
+    border: 1px solid black;
+    border-radius: 4px;
+    padding: 1em;
+}
+
+.task {
+    border: 1px solid black;
+    border-radius: 4px;
+    padding: 1em;
+    margin-bottom: .5em;
+}
+
+.task h3 {
+    font-style: italic;
+    
+    margin-top: 0;
+    margin-bottom: .5em;
+}
+
+.task p {
+    margin-top: .5em;
+    margin-bottom: 0;
+}
+
+.task input {
+    width: 50%;
+
+    font-size: inherit;
+
+    border: none;
+    border-bottom: 1px solid black;
+}
+
+#taskNameInput {
+    width: 100%;
+
+    border: none;
+    border-bottom: 1px solid black;
+
+    margin-bottom: 1em;
+}
+
+button {
+    background: white;
+    border: 1px solid black;
+    border-radius: 4px;
+    padding: .75em;
+}

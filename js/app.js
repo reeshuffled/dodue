@@ -76,8 +76,8 @@ function setDefaultDates()
 function appendTask(task)
 {
     const name = task.name;
-    const doDate  = task.doDate  ? new Date(task.doDate).toLocaleDateString()  : "none";
-    const dueDate = task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "none";
+    const doDate  = task.doDate || "none";
+    const dueDate = task.dueDate || "none";
 
     const taskDiv = document.createElement("div");
     taskDiv.className = "task";
@@ -142,6 +142,21 @@ function appendTask(task)
                 // update the task name in memory and save it
                 task.doDate = formatDate(inputEl.value);
                 saveTasks();
+
+                // if the task's do date is today, put it in the currentTasksSection
+                if (task.doDate == formatDate(new Date().toLocaleDateString("en-CA")))
+                {
+                    laterTasksSection.removeChild(taskDiv);
+                    currentTasksSection.appendChild(taskDiv);
+                }
+                // if task's do date is not today, then put it in the laterTasksSection
+                else 
+                {
+                    currentTasksSection.removeChild(taskDiv);
+                    laterTasksSection.appendChild(taskDiv);
+                }
+
+                checkIfAllTasksDone();
             }
             else if (e.key == "Escape") {
                 // revert the name back to its original state
@@ -200,8 +215,6 @@ function appendTask(task)
     taskDiv.appendChild(nameHeader);
     taskDiv.appendChild(doDateEl);
     taskDiv.appendChild(dueDateEl);
-
-    console.log(new Date(task.doDate));
 
     // if the task's do date is today, put it in the currentTasksSection
     if (task.doDate == formatDate(new Date().toLocaleDateString("en-CA")))
@@ -263,12 +276,22 @@ function fetchTasks()
 function checkIfAllTasksDone()
 {
     const today = formatDate(new Date().toLocaleDateString("en-CA"));
-    
-    if (tasks.filter(x => x.doDate == today).length == 0) {
+
+    if (tasks.filter(x => x.doDate == today).length == 0) 
+    {
         currentTasksSection.innerHTML += `
-            <div class="task">
+            <div class="task" id="doneAllTasks">
                 <h4 style="margin-top: 0; margin-bottom: 0">you have no more tasks for today :)</h4>
             </div>
         `;
+    }
+    else
+    {
+        const allTasksDoneEl = document.getElementById("allTasksDone");
+
+        if (allTasksDoneEl)
+        {
+            currentTasksSection.removeChild(allTasksDoneEl);
+        }
     }
 }

@@ -198,11 +198,25 @@ function appendTask(task)
     }
 
     dueDateEl.appendChild(dueDateSpan);
+
+    // create a button that deletes the task when done
+    const doneButton = document.createElement("button");
+    doneButton.innerText = "i finished!";
+    doneButton.onclick = () => {
+        // remove the task
+        tasks.splice(tasks.indexOf(task), 1);
+
+        saveTasks();
+
+        // re-render tasks
+        renderTasks();
+    }
     
     // add information components to task div
     taskDiv.appendChild(nameHeader);
     taskDiv.appendChild(doDateEl);
     taskDiv.appendChild(dueDateEl);
+    taskDiv.appendChild(doneButton);
 
     // if the task's do date is today, put it in the currentTasksSection
     if (task.doDate == formatDate(new Date().toLocaleDateString("en-CA")))
@@ -264,9 +278,21 @@ function renderTasks()
     currentTasksSection.innerHTML = "";
     laterTasksSection.innerHTML = "";
 
-    // sort tasks in ascending order and add to the screen
+    // sort tasks in by date then alphabetically and add to the screen
     tasks
-        .sort((a, b) => new Date(a.doDate).getTime() - new Date(b.doDate).getTime())
+        .sort((a, b) => {
+            const aDate = new Date(a.doDate).getTime();
+            const bDate = new Date(b.doDate).getTime();
+            
+            if (aDate == bDate) 
+            {
+                return a.name.localeCompare(b.name);
+            }
+            else
+            {
+                return aDate - bDate;
+            }
+        })
         .forEach(task => appendTask(task));
 
     // check if there are no tasks for today

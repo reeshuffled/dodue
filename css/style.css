@@ -31,6 +31,10 @@ h3.title {
     margin-bottom: .5em;
 }
 
+.task button {
+    margin-top: .5em;
+}
+
 .task h3 {
     font-style: italic;
     

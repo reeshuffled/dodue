@@ -39,11 +39,11 @@ function bindTaskCreationAction()
             dueDate: dueDate
         };
 
-        // append task to tasks section
-        appendTask(newTask);
-
         // add to tasks list
         tasks.push(newTask);
+
+        // re-render tasks
+        renderTasks();
 
         // save tasks to localStorage
         saveTasks();
@@ -143,20 +143,8 @@ function appendTask(task)
                 task.doDate = formatDate(inputEl.value);
                 saveTasks();
 
-                // if the task's do date is today, put it in the currentTasksSection
-                if (task.doDate == formatDate(new Date().toLocaleDateString("en-CA")))
-                {
-                    laterTasksSection.removeChild(taskDiv);
-                    currentTasksSection.appendChild(taskDiv);
-                }
-                // if task's do date is not today, then put it in the laterTasksSection
-                else 
-                {
-                    currentTasksSection.removeChild(taskDiv);
-                    laterTasksSection.appendChild(taskDiv);
-                }
-
-                checkIfAllTasksDone();
+                // re-render the tasks since the due date has changed and will affect sort order and if its do now vs later
+                renderTasks();
             }
             else if (e.key == "Escape") {
                 // revert the name back to its original state
@@ -262,12 +250,27 @@ function fetchTasks()
         // retrieve tasks from localStorage and add to tasks list
         tasks.push(...JSON.parse(localStorage.getItem(STORAGE_LOCATION)));
 
-        // render all tasks
-        tasks.forEach(task => appendTask(task));
-
-        // check if there are no tasks for today
-        checkIfAllTasksDone();
+        // render tasks that have just been pulled from storage
+        renderTasks();
     }
+}
+
+/**
+ * Add tasks to the screen into their appropriate section.
+ */
+function renderTasks()
+{
+    // clear out previous task HTML
+    currentTasksSection.innerHTML = "";
+    laterTasksSection.innerHTML = "";
+
+    // sort tasks in ascending order and add to the screen
+    tasks
+        .sort((a, b) => new Date(a.doDate).getTime() - new Date(b.doDate).getTime())
+        .forEach(task => appendTask(task));
+
+    // check if there are no tasks for today
+    checkIfAllTasksDone();
 }
 
 /**
@@ -277,21 +280,41 @@ function checkIfAllTasksDone()
 {
     const today = formatDate(new Date().toLocaleDateString("en-CA"));
 
+    // if there are no tasks to do today
     if (tasks.filter(x => x.doDate == today).length == 0) 
     {
         currentTasksSection.innerHTML += `
-            <div class="task" id="doneAllTasks">
+            <div class="task" id="doneAllCurrentTasks">
                 <h4 style="margin-top: 0; margin-bottom: 0">you have no more tasks for today :)</h4>
             </div>
         `;
     }
     else
     {
-        const allTasksDoneEl = document.getElementById("allTasksDone");
+        const allTasksDoneEl = document.getElementById("doneAllCurrentTasks");
 
         if (allTasksDoneEl)
         {
             currentTasksSection.removeChild(allTasksDoneEl);
+        }
+    }
+
+    // if there are no tasks to do later
+    if (tasks.filter(x => new Date(x.doDate).getTime() > new Date().getTime()).length == 0) 
+    {
+        laterTasksSection.innerHTML += `
+            <div class="task" id="doneAllLaterTasks">
+                <h4 style="margin-top: 0; margin-bottom: 0">you have no more tasks for the foreseeable future :)</h4>
+            </div>
+        `;
+    }
+    else
+    {
+        const allTasksDoneEl = document.getElementById("doneAllLaterTasks");
+
+        if (allTasksDoneEl)
+        {
+            laterTasksSection.removeChild(allTasksDoneEl);
         }
     }
 }

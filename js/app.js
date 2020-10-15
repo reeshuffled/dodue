@@ -206,6 +206,7 @@ function appendTask(task)
         // remove the task
         tasks.splice(tasks.indexOf(task), 1);
 
+        // commit to memory the latest action
         saveTasks();
 
         // re-render tasks
@@ -263,10 +264,10 @@ function fetchTasks()
     {
         // retrieve tasks from localStorage and add to tasks list
         tasks.push(...JSON.parse(localStorage.getItem(STORAGE_LOCATION)));
-
-        // render tasks that have just been pulled from storage
-        renderTasks();
     }
+
+    // render tasks that have just been pulled from storage
+    renderTasks();
 }
 
 /**

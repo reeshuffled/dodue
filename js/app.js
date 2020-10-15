@@ -1,5 +1,6 @@
 const STORAGE_LOCATION = "tasks";
 
+const overdueTasksSection = document.getElementById("overdueTasks");
 const currentTasksSection = document.getElementById("currentTasks");
 const laterTasksSection = document.getElementById("laterTasks");
 const addTaskButton = document.getElementById("addTask");
@@ -54,18 +55,6 @@ function bindTaskCreationAction()
         // reset date inputs
         setDefaultDates();
     }
-}
-
-/**
- * Set the default dates for do and due date inputs.
- */
-function setDefaultDates() 
-{
-    const today = new Date();
-    const tomorrow = new Date(today.getTime() + 1000 * 60 * 60 * 24);
-
-    doDateInput.value = today.toLocaleDateString("en-CA");
-    dueDateInput.value = tomorrow.toLocaleDateString("en-CA");
 }
 
 /**
@@ -218,9 +207,17 @@ function appendTask(task)
     taskDiv.appendChild(doDateEl);
     taskDiv.appendChild(dueDateEl);
     taskDiv.appendChild(doneButton);
-
+    
+    // if a task's due date is before today, it is overdue
+    const today = formatDate(new Date().toLocaleDateString("en-CA"));
+    if (new Date(task.doDate).getTime() < new Date(today).getTime()
+                || new Date(task.dueDate).getTime() < new Date(today).getTime())
+    {
+        document.getElementById("overdue").style.display = "";
+        overdueTasksSection.appendChild(taskDiv);
+    }
     // if the task's do date is today, put it in the currentTasksSection
-    if (task.doDate == formatDate(new Date().toLocaleDateString("en-CA")))
+    else if (task.doDate == today)
     {
         currentTasksSection.appendChild(taskDiv);
     }
@@ -232,50 +229,12 @@ function appendTask(task)
 }
 
 /**
- * Take the date format from the date input and transform it into MM/DD/YYYY as a more stable serializable 
- * date format, as well as being the preferred format of Americans.
- * @param {String} dateString 
- */
-function formatDate(dateString)
-{
-    const components = dateString.split("-");
-
-    // take year from beginning and put at end
-    components.push(components.shift());
-
-    return components.join("/");
-}
-
-/**
- * Save the tasks list to localStorage.
- */
-function saveTasks()
-{
-    localStorage.setItem(STORAGE_LOCATION, JSON.stringify(tasks));
-}
-
-/**
- * Get saved tasks from localStorage and display them on-screen.
- */
-function fetchTasks()
-{
-    // if the user has tasks saved
-    if (localStorage.getItem(STORAGE_LOCATION))
-    {
-        // retrieve tasks from localStorage and add to tasks list
-        tasks.push(...JSON.parse(localStorage.getItem(STORAGE_LOCATION)));
-    }
-
-    // render tasks that have just been pulled from storage
-    renderTasks();
-}
-
-/**
  * Add tasks to the screen into their appropriate section.
  */
 function renderTasks()
 {
     // clear out previous task HTML
+    overdueTasksSection.innerHTML = "";
     currentTasksSection.innerHTML = "";
     laterTasksSection.innerHTML = "";
 
@@ -306,6 +265,13 @@ function renderTasks()
 function checkIfAllTasksDone()
 {
     const today = formatDate(new Date().toLocaleDateString("en-CA"));
+    
+    // hide the overdue section if no tasks are overdue
+    if (tasks.filter(x => new Date(x.doDate).getTime() < new Date(today).getTime()).length == 0
+        && tasks.filter(x => new Date(x.dueDate).getTime() < new Date(today).getTime()).length == 0)
+    {
+        document.getElementById("overdue").style.display = "none";
+    }
 
     // if there are no tasks to do today
     if (tasks.filter(x => x.doDate == today).length == 0) 
@@ -344,4 +310,56 @@ function checkIfAllTasksDone()
             laterTasksSection.removeChild(allTasksDoneEl);
         }
     }
+}
+
+/**
+ * Set the default dates for do and due date inputs.
+ */
+function setDefaultDates() 
+{
+    const today = new Date();
+    const tomorrow = new Date(today.getTime() + 1000 * 60 * 60 * 24);
+
+    doDateInput.value = today.toLocaleDateString("en-CA");
+    dueDateInput.value = tomorrow.toLocaleDateString("en-CA");
+}
+
+
+/**
+ * Save the tasks list to localStorage.
+ */
+function saveTasks()
+{
+    localStorage.setItem(STORAGE_LOCATION, JSON.stringify(tasks));
+}
+
+/**
+ * Get saved tasks from localStorage and display them on-screen.
+ */
+function fetchTasks()
+{
+    // if the user has tasks saved
+    if (localStorage.getItem(STORAGE_LOCATION))
+    {
+        // retrieve tasks from localStorage and add to tasks list
+        tasks.push(...JSON.parse(localStorage.getItem(STORAGE_LOCATION)));
+    }
+
+    // render tasks that have just been pulled from storage
+    renderTasks();
+}
+
+/**
+ * Take the date format from the date input and transform it into MM/DD/YYYY as a more stable serializable 
+ * date format, as well as being the preferred format of Americans.
+ * @param {String} dateString 
+ */
+function formatDate(dateString)
+{
+    const components = dateString.split("-");
+
+    // take year from beginning and put at end
+    components.push(components.shift());
+
+    return components.join("/");
 }

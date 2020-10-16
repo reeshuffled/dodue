@@ -11,7 +11,6 @@ textarea:focus, input:focus{
     outline: 0;
     background: transparent;
     border-bottom: 1px solid grey;
-    width: 250px;
     border-radius: 0;
     -webkit-appearance: none;
 }

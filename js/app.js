@@ -17,11 +17,11 @@ const tasks = [];
  * Initialize the UI components of the application.
  */
 (function initUI() {
-    bindTaskCreationAction();
+    setDefaultDates();
+
+    bindTaskCreationActions();
     bindUserGuideToggle();
 
-    setDefaultDates();
-    
     fetchTasks();
 })();
 
@@ -45,36 +45,94 @@ function bindUserGuideToggle()
 /**
  * Add the onclick function to the task creation button UI component.
  */
-function bindTaskCreationAction() 
+function bindTaskCreationActions() 
 {
-    addTaskButton.onclick = () => {
-        // get task data to create
-        const name    = taskNameInput.value;
-        const doDate  = formatDate(doDateInput.value);
-        const dueDate = formatDate(dueDateInput.value);
+    addTaskButton.onclick = createTask;
 
-        // create task object
-        const newTask = {
-            name: name,
-            doDate: doDate,
-            dueDate: dueDate
-        };
+    // move the due date along with the do date if is is increasing by a small interval (i.e. not being a chosen date from the datepicker)
+    let oldDoDate = doDateInput.value;
+    doDateInput.onchange = () => {
+        // if the date is moved by an interval of one day (i.e. via the arrow keys)
+        if (new Date(formatDate(doDateInput.value)).getTime() - new Date(formatDate(oldDoDate)).getTime() == 1000 * 60 * 60 * 24) 
+        {
+            dueDateInput.value = new Date(new Date(formatDate(dueDateInput.value)).getTime() + 1000 * 60 * 60 * 24).toLocaleDateString("en-CA");
+        }
 
-        // add to tasks list
-        tasks.push(newTask);
-
-        // re-render tasks
-        renderTasks();
-
-        // save tasks to localStorage
-        saveTasks();
-
-        // reset name input
-        taskNameInput.value = "";
-
-        // reset date inputs
-        setDefaultDates();
+        oldDoDate = doDateInput.value;
     }
+
+    // prevent due date from being set to a date before the do date
+    let oldDueDate = dueDateInput.value;
+    dueDateInput.onchange = e => {
+        if (new Date(formatDate(dueDateInput.value)).getTime() < new Date(formatDate(doDateInput.value)).getTime()) 
+        {
+            dueDateInput.value = oldDueDate;
+        }
+        else
+        {
+            oldDueDate = dueDateInput.value;
+        }
+    }
+
+    // allow the user to press enter in the task name field to create a new task to speed up task creation
+    taskNameInput.onkeydown = e => {
+        if (e.key == "Enter")
+        {
+            createTask();
+        }
+    }
+
+    // allow the user to press enter in the task do date field to create a new task to speed up task creation
+    doDateInput.onkeydown = e => {
+        if (e.key == "Enter")
+        {
+            createTask();
+        }
+    }
+
+    // allow the user to press enter in the task due date field to create a new task to speed up task creation
+    dueDateInput.onkeydown = e => {
+        if (e.key == "Enter")
+        {
+            createTask();
+        }
+    }
+}
+
+/**
+ * Create a new task, save it to storage, and display it on screen.
+ */
+function createTask()
+{
+    // get task data to create
+    const name    = taskNameInput.value;
+    const doDate  = formatDate(doDateInput.value);
+    const dueDate = formatDate(dueDateInput.value);
+
+    // do not allow blank named tasks
+    if (name == "") return;
+
+    // create task object
+    const newTask = {
+        name: name,
+        doDate: doDate,
+        dueDate: dueDate
+    };
+
+    // add to tasks list
+    tasks.push(newTask);
+
+    // re-render tasks
+    renderTasks();
+
+    // save tasks to localStorage
+    saveTasks();
+
+    // reset name input
+    taskNameInput.value = "";
+
+    // reset date inputs
+    setDefaultDates();
 }
 
 /**
@@ -343,7 +401,6 @@ function setDefaultDates()
     doDateInput.value = today.toLocaleDateString("en-CA");
     dueDateInput.value = tomorrow.toLocaleDateString("en-CA");
 }
-
 
 /**
  * Save the tasks list to localStorage.

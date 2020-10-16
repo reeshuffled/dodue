@@ -1,5 +1,7 @@
+// localStorage key for the tasks list
 const STORAGE_LOCATION = "tasks";
 
+// references to HTML elements
 const userGuideLink = document.getElementById("userGuideLink");
 const userGuideSection = document.getElementById("userGuide");
 const overdueTasksSection = document.getElementById("overdueTasks");
@@ -11,7 +13,11 @@ const doDateInput = document.getElementById("doDateInput");
 const dueDateInput = document.getElementById("dueDateInput");
 const laterTasksToggle = document.getElementById("laterTasksToggle");
 
+// tasks list
 const tasks = [];
+
+// the input element of the task attribute that is being currently edited
+let currentlyEditing;
 
 /**
  * Initialize the UI components of the application.
@@ -159,6 +165,9 @@ function appendTask(task)
         const inputEl = document.createElement("input");
         inputEl.type = "text";
         inputEl.value = name;
+
+        // prevent user from editing multiple elements at the same time
+        exitOtherEditing(inputEl);
         
         // stop propagation in order to prevent nameHeader clicks to be captured when the input element is on the page
         inputEl.onclick = e => e.stopPropagation();
@@ -175,6 +184,9 @@ function appendTask(task)
             else if (e.key == "Escape") {
                 // revert the name back to its original state
                 nameHeader.innerText = name;
+
+                // clear out currently editing since we manually reverted input element
+                currentlyEditing = null;
             }
         }
 
@@ -198,6 +210,9 @@ function appendTask(task)
         inputEl.type = "date";
         inputEl.value = new Date(doDate).toLocaleDateString("en-CA");
 
+        // prevent user from editing multiple elements at the same time
+        exitOtherEditing(inputEl);
+
         // stop propagation in order to prevent doDateSpan clicks to be captured when the input element is on the page
         inputEl.onclick = e => e.stopPropagation();
         inputEl.onkeydown = e => {
@@ -216,6 +231,9 @@ function appendTask(task)
             else if (e.key == "Escape") {
                 // revert the name back to its original state
                 doDateSpan.innerText = doDate;
+
+                // clear out currently editing since we manually reverted input element
+                currentlyEditing = null;
             }
         }
 
@@ -240,6 +258,9 @@ function appendTask(task)
         const inputEl = document.createElement("input");
         inputEl.type = "date";
         inputEl.value = new Date(dueDate).toLocaleDateString("en-CA");
+
+        // prevent user from editing multiple elements at the same time
+        exitOtherEditing(inputEl);
  
         // stop propagation in order to prevent doDateSpan clicks to be captured when the input element is on the page
         inputEl.onclick = e => e.stopPropagation();
@@ -256,6 +277,9 @@ function appendTask(task)
             else if (e.key == "Escape") {
                 // revert the name back to its original state
                 dueDateSpan.innerText = dueDate;
+
+                // clear out currently editing since we manually reverted input element
+                currentlyEditing = null;
             }
         }
  
@@ -304,6 +328,28 @@ function appendTask(task)
     {
         laterTasksSection.appendChild(taskDiv);
     }
+}
+
+/**
+ * If we are currently editing another input, revert back to text.
+ * @param {HTMLElement} inputEl 
+ */
+function exitOtherEditing(inputEl)
+{
+    // if we are currently editing another element, revert it back to text
+    if (currentlyEditing)
+    {
+        if (currentlyEditing.type == "date")
+        {
+            currentlyEditing.parentNode.innerText = formatDate(currentlyEditing.value);
+        }
+        else
+        {
+            currentlyEditing.parentNode.innerText = currentlyEditing.value;
+        }
+    }
+ 
+    currentlyEditing = inputEl;
 }
 
 /**

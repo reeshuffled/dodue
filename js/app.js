@@ -1,5 +1,7 @@
 const STORAGE_LOCATION = "tasks";
 
+const userGuideLink = document.getElementById("userGuideLink");
+const userGuideSection = document.getElementById("userGuide");
 const overdueTasksSection = document.getElementById("overdueTasks");
 const currentTasksSection = document.getElementById("currentTasks");
 const laterTasksSection = document.getElementById("laterTasks");
@@ -16,11 +18,29 @@ const tasks = [];
  */
 (function initUI() {
     bindTaskCreationAction();
+    bindUserGuideToggle();
 
     setDefaultDates();
     
     fetchTasks();
 })();
+
+/**
+ * Bind the onclick action to the user guide link to toggle visibility of help text.
+ */
+function bindUserGuideToggle() 
+{
+    userGuideLink.onclick = () => {
+        if (userGuideSection.style.display == "none")
+        {
+            userGuideSection.style.display = "";
+        }
+        else
+        {
+            userGuideSection.style.display = "none";
+        }
+    }
+}
 
 /**
  * Add the onclick function to the task creation button UI component.

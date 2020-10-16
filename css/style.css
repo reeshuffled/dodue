@@ -14,14 +14,36 @@ textarea:focus, input:focus{
     text-align: center;
 }
 
+.text-underline {
+    text-decoration: underline;
+}
+
 h3.title {
     margin-bottom: .25em;
+}
+
+#userGuideLink {
+    margin-top: .5em;
+    margin-bottom: 0;
+}
+
+#userGuideLink:hover, #closeUserGuideLink:hover {
+    cursor: pointer;
+}
+
+#userGuide {
+    margin-right: 1em;
+    margin-left: 1em;
 }
 
 #taskAdd {
     border: 1px solid black;
     border-radius: 4px;
     padding: 1em;
+}
+
+#taskAdd h4 {
+    margin: 0;
 }
 
 .task {
@@ -63,6 +85,8 @@ h3.title {
     border-bottom: 1px solid black;
 
     margin-bottom: 1em;
+
+    font-size: inherit;
 }
 
 button {

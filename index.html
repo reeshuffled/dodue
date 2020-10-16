@@ -8,7 +8,22 @@
     </head>
 
     <body>
-        <h1 class="text-center">dodue</h1>
+        <h1 class="text-center" style="margin: 0">dodue</h1>
+
+        <p id="userGuideLink" class="text-center text-underline">how to use this app</p>
+        <section id="userGuide" style="display: none">
+            <p>
+                to edit a name or do/due date, just click on the text in the task box, and it will be replaced with and editable element.
+            </p>
+
+            <p>
+                while editing, press the "enter" key to save your changes, or press the "escape" key if you want to exit without saving changes.
+            </p>
+
+            <p id="closeUserGuideLink" class="text-underline" onclick="this.parentNode.style.display='none'">
+                (x) close this section
+            </p>
+        </section>
 
         <section id="overdue" style="display: none">
             <h3 class="title">overdue</h3>
@@ -19,7 +34,9 @@
         <section id="currentTasks"></section>
 
         <section id="taskAdd" class="text-center">
-            <input id="taskNameInput" type="text" placeholder="enter your task..."/>
+            <h4>
+                <input id="taskNameInput" type="text" placeholder="enter your task..."/>
+            </h4>
 
             <label for="doDate">do date:</label>
             <input id="doDateInput" name="doDate" type="date"/>

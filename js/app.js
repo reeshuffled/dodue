@@ -362,6 +362,9 @@ function renderTasks()
     currentTasksSection.innerHTML = "";
     laterTasksSection.innerHTML = "";
 
+    // everything is being re-rendered so this input won't exist anymore
+    currentlyEditing = null;
+
     // sort tasks in by date then alphabetically and add to the screen
     tasks
         .sort((a, b) => {

@@ -7,7 +7,13 @@ label {
 }
 
 textarea:focus, input:focus{
-    outline: none;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    border-bottom: 1px solid grey;
+    width: 250px;
+    border-radius: 0;
+    -webkit-appearance: none;
 }
 
 .text-center {
@@ -40,6 +46,17 @@ h3.title {
     border: 1px solid black;
     border-radius: 4px;
     padding: 1em;
+}
+
+#mobileNewline {
+    display: none;
+}
+
+@media only screen and (max-width: 600px) {
+    #mobileNewline {
+        display: block;
+        margin: .5em;
+    }
 }
 
 #taskAdd h4 {
@@ -83,6 +100,11 @@ h3.title {
 
     border: none;
     border-bottom: 1px solid black;
+
+    outline: 0;
+    background: transparent;
+    border-bottom: 1px solid grey;
+    border-radius: 0;
 
     margin-bottom: 1em;
 

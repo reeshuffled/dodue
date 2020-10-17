@@ -25,11 +25,51 @@ let currentlyEditing;
 (function initUI() {
     setDefaultDates();
 
+    checkEnableDarkMode();
+
     bindTaskCreationActions();
     bindUserGuideToggle();
 
     fetchTasks();
 })();
+
+/**
+ * Check to see if dark mode should be enabled or disabled on the page.
+ */
+function checkEnableDarkMode()
+{
+    // from: https://github.com/nickdeny/darkmode-js/blob/master/darkmode.js
+    const isDarkMode = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+    // get favicon data
+    const faviconEl = document.querySelector("link[rel*='icon']");
+    const currentFavicon = faviconEl.href;
+    const newFavicon = isDarkMode ? "img/dark-mode-favicon.png" : "img/light-mode-favicon.png";
+    
+    if (isDarkMode)
+    {
+        // from: https://dev.to/jamiepo/go-dark-mode-with-css-filter-2p6p
+        document.body.style.filter = "invert(100%) hue-rotate(180deg)";
+        document.body.style.backgroundColor = "black";
+    }
+    else
+    {
+        document.body.style.filter = "";
+        document.body.style.backgroundColor = "white";
+    }
+
+    // change the favicon only if the mode has switchec
+    if (currentFavicon != newFavicon)
+    {
+        document.head.removeChild(faviconEl);
+
+        const newFaviconEl = document.createElement("link");
+        newFaviconEl.rel = "shortcut icon";
+        newFaviconEl.href = newFavicon;
+
+        document.head.appendChild(newFaviconEl);
+    }
+}
 
 /**
  * Bind the onclick action to the user guide link to toggle visibility of help text.

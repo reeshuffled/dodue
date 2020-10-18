@@ -16,6 +16,9 @@ const laterTasksToggle = document.getElementById("laterTasksToggle");
 // tasks list
 const tasks = [];
 
+// if the user is currently in keyboard navigation mode
+let keyboardNavigationMode = false;
+
 // the input element of the task attribute that is being currently edited
 let currentlyEditing;
 
@@ -23,15 +26,138 @@ let currentlyEditing;
  * Initialize the UI components of the application.
  */
 (function initUI() {
-    setDefaultDates();
-
     checkEnableDarkMode();
+
+    setDefaultDates();
 
     bindTaskCreationActions();
     bindUserGuideToggle();
+    bindKeyboardShortcuts();
 
     fetchTasks();
 })();
+
+/**
+ * Listen for keyboard navigation shortcuts.
+ */
+function bindKeyboardShortcuts()
+{
+    document.onkeydown = e => {
+        // if entering keyboard navigation mode
+        if (e.key == "Tab" && !keyboardNavigationMode)
+        {
+            // stop normal tab keypress behavior
+            e.preventDefault();
+
+            // enable keyboard navigation mode
+            keyboardNavigationMode = true;
+
+            // add active class to the first task on screen
+            const firstTask = document.querySelector(".task");
+            if (firstTask)
+            {
+                firstTask.classList.add("active");
+            }
+        }
+
+        // register keypresses of special keys when in keyboard navigation mode
+        if (keyboardNavigationMode)
+        {
+            // if exiting keyboard navigation mode
+            if (e.key == "Escape")
+            {
+                const currentlyActive = document.querySelector(".task.active");
+                currentlyActive.classList.remove("active");
+
+                keyboardNavigationMode = false;
+            }
+            // if navigating downwards
+            else if (e.key == "ArrowDown")
+            {
+                // get all tasks and the currently active task
+                const allTasks = [...document.querySelectorAll(".task")];
+                const currentlyActive = document.querySelector(".task.active");
+                
+                // get the index of the next task and see if it can advance to a next task
+                const nextIndex = allTasks.indexOf(currentlyActive) + 1;
+                if (nextIndex < allTasks.length)
+                {
+                    // de-select the currently selected task
+                    currentlyActive.classList.remove("active");
+
+                    // select the next task
+                    allTasks[nextIndex].classList.add("active");
+                }
+            }
+            // if navigating upwards
+            else if (e.key == "ArrowUp")
+            {
+                // get all tasks and the currently active task
+                const allTasks = [...document.querySelectorAll(".task")];
+                const currentlyActive = document.querySelector(".task.active");
+
+                // get the index of the next task and see if it can advance to a next task
+                const nextIndex = allTasks.indexOf(currentlyActive) - 1;
+                if (nextIndex >= 0)
+                {
+                    // de-select the currently selected task
+                    currentlyActive.classList.remove("active");
+
+                    // select the next task
+                    allTasks[nextIndex].classList.add("active");
+                }
+            }
+            // if trying to delete a task
+            else if (e.key == "d")
+            {
+                if (confirm("are you sure you want to delete this task?"))
+                {
+                    // get all tasks and the currently active task
+                    const allTasks = [...document.querySelectorAll(".task")];
+                    const currentlyActive = document.querySelector(".task.active");
+
+                    // remove the task
+                    tasks.splice(allTasks.indexOf(currentlyActive), 1);
+
+                    // commit to memory the latest action
+                    saveTasks();
+ 
+                    // re-render tasks
+                    renderTasks();
+                }
+            }
+            // if trying to edit a task attribute
+            else if (e.key == "1" || e.key == "2" || e.key == "3")
+            {
+                e.preventDefault();
+
+                const allTasks = [...document.querySelectorAll(".task")];
+                const currentlyActive = document.querySelector(".task.active");
+                const currentTask = tasks[allTasks.indexOf(currentlyActive)];
+
+                let el;
+
+                if (e.key == "1")
+                {
+                    el = currentlyActive.querySelector(`h3[for="name"]`);
+                    enableEditingOnClick(el, "text", "name", el.innerText, currentTask);
+                }
+                else if (e.key == "2")
+                {
+                    el = currentlyActive.querySelector(`span[for="doDate"]`);
+                    enableEditingOnClick(el, "date", "doDate", el.innerText, currentTask);
+                }
+                else if (e.key == "3")
+                {
+                    el = currentlyActive.querySelector(`span[for="dueDate"]`);
+                    enableEditingOnClick(el, "date", "dueDate", el.innerText, currentTask);
+                }
+
+                el.click();
+            }
+        }
+    }
+}
 
 /**
  * Check to see if dark mode should be enabled or disabled on the page.
@@ -195,92 +321,16 @@ function appendTask(task)
     const taskDiv = document.createElement("div");
     taskDiv.className = "task";
     
-    const nameHeader = document.createElement("h3");
-    nameHeader.innerText = name;
-    nameHeader.onclick = () => {
-        // clear the nameHeader to make room for the input element to edit the name
-        nameHeader.innerHTML = "";
-
-        // create input element that auto-populates with previous name to edit
-        const inputEl = document.createElement("input");
-        inputEl.type = "text";
-        inputEl.value = name;
-
-        // prevent user from editing multiple elements at the same time
-        exitOtherEditing(inputEl);
-        
-        // stop propagation in order to prevent nameHeader clicks to be captured when the input element is on the page
-        inputEl.onclick = e => e.stopPropagation();
-        inputEl.onkeydown = e => {
-            // when the user presses enter, save the new name
-            if (e.key == "Enter") {
-                // update the name in the display
-                nameHeader.innerText = inputEl.value;
-
-                // update the task name in memory and save it
-                task.name = inputEl.value;
-                saveTasks();
-            }
-            else if (e.key == "Escape") {
-                // revert the name back to its original state
-                nameHeader.innerText = name;
-
-                // clear out currently editing since we manually reverted input element
-                currentlyEditing = null;
-            }
-        }
-
-        // add the input element to the nameHeader and focus on the input to start
-        nameHeader.appendChild(inputEl);
-        inputEl.focus();
-    }
+    const nameHeaderEl = document.createElement("h3");
+    nameHeaderEl.setAttribute("for", "name");
+    enableEditingOnClick(nameHeaderEl, "text", "name", name, task);
     
     const doDateEl = document.createElement("p");
     doDateEl.innerHTML = `<b>do date: </b>`;
 
     const doDateSpan = document.createElement("span");
-    doDateSpan.innerText = doDate;
-
-    doDateSpan.onclick = () => {
-        // clear the doDateSpan to make room for the input element to edit the date
-        doDateSpan.innerHTML = "";
-
-        // create input element that auto-populates with previous do date to edit
-        const inputEl = document.createElement("input");
-        inputEl.type = "date";
-        inputEl.value = new Date(doDate).toLocaleDateString("en-CA");
-
-        // prevent user from editing multiple elements at the same time
-        exitOtherEditing(inputEl);
-
-        // stop propagation in order to prevent doDateSpan clicks to be captured when the input element is on the page
-        inputEl.onclick = e => e.stopPropagation();
-        inputEl.onkeydown = e => {
-            // when the user presses enter, save the new name
-            if (e.key == "Enter") {
-                // update the do date in the display
-                doDateSpan.innerText = formatDate(inputEl.value);
-
-                // update the task name in memory and save it
-                task.doDate = formatDate(inputEl.value);
-                saveTasks();
-
-                // re-render the tasks since the due date has changed and will affect sort order and if its do now vs later
-                renderTasks();
-            }
-            else if (e.key == "Escape") {
-                // revert the name back to its original state
-                doDateSpan.innerText = doDate;
-
-                // clear out currently editing since we manually reverted input element
-                currentlyEditing = null;
-            }
-        }
-
-        // add the input element to the doDateSpan and focus on the input to start
-        doDateSpan.appendChild(inputEl);
-        inputEl.focus();
-    }
+    doDateSpan.setAttribute("for", "doDate");
+    enableEditingOnClick(doDateSpan, "date", "doDate", doDate, task);
     
     doDateEl.appendChild(doDateSpan);
 
@@ -288,45 +338,8 @@ function appendTask(task)
     dueDateEl.innerHTML = `<b>due date: </b>`;
 
     const dueDateSpan = document.createElement("span");
-    dueDateSpan.innerText = dueDate;
-
-    dueDateSpan.onclick = () => {
-        // clear the doDateSpan to make room for the input element to edit the date
-        dueDateSpan.innerHTML = "";
-
-        // create input element that auto-populates with previous do date to edit
-        const inputEl = document.createElement("input");
-        inputEl.type = "date";
-        inputEl.value = new Date(dueDate).toLocaleDateString("en-CA");
-
-        // prevent user from editing multiple elements at the same time
-        exitOtherEditing(inputEl);
- 
-        // stop propagation in order to prevent doDateSpan clicks to be captured when the input element is on the page
-        inputEl.onclick = e => e.stopPropagation();
-        inputEl.onkeydown = e => {
-            // when the user presses enter, save the new name
-            if (e.key == "Enter") {
-                // update the do date in the display
-                dueDateSpan.innerText = formatDate(inputEl.value);
- 
-                // update the task name in memory and save it
-                task.dueDate = formatDate(inputEl.value);
-                saveTasks();
-            }
-            else if (e.key == "Escape") {
-                // revert the name back to its original state
-                dueDateSpan.innerText = dueDate;
-
-                // clear out currently editing since we manually reverted input element
-                currentlyEditing = null;
-            }
-        }
- 
-        // add the input element to the doDateSpan and focus on the input to start
-        dueDateSpan.appendChild(inputEl);
-        inputEl.focus();
-    }
+    dueDateSpan.setAttribute("for", "dueDate");
+    enableEditingOnClick(dueDateSpan, "date", "dueDate", dueDate, task);
 
     dueDateEl.appendChild(dueDateSpan);
 
@@ -345,7 +358,7 @@ function appendTask(task)
     }
     
     // add information components to task div
-    taskDiv.appendChild(nameHeader);
+    taskDiv.appendChild(nameHeaderEl);
     taskDiv.appendChild(doDateEl);
     taskDiv.appendChild(dueDateEl);
     taskDiv.appendChild(doneButton);
@@ -367,6 +380,87 @@ function appendTask(task)
     else 
     {
         laterTasksSection.appendChild(taskDiv);
+    }
+}
+
+/**
+ * When you click the element, it will replace it with an input element that allows you to
+ * manually edit the value.
+ * @param {HTMLElement} el 
+ * @param {String} inputType
+ * @param {String} key 
+ * @param {*} initialValue 
+ * @param {Object} task 
+ */
+function enableEditingOnClick(el, inputType, key, initialValue, task)
+{
+    // set the initial text of the element
+    el.innerText = initialValue;
+
+    el.onclick = () => {
+        // clear the nameHeader to make room for the input element to edit the name
+        el.innerHTML = "";
+
+        // create input element that auto-populates with an initial value to edit
+        const inputEl = document.createElement("input");
+        inputEl.type = inputType;
+
+        // format value for date input, set as raw data else
+        if (inputType == "date")
+        {
+            inputEl.value = new Date(initialValue).toLocaleDateString("en-CA");
+        }
+        else
+        {
+            inputEl.value = initialValue;
+        }
+
+        // prevent user from editing multiple elements at the same time
+        exitOtherEditing(inputEl);
+        
+        // stop propagation in order to prevent nameHeader clicks to be captured when the input element is on the page
+        inputEl.onclick = e => e.stopPropagation();
+        inputEl.onkeydown = e => {
+            // stop keys from being captured at the global level
+            e.stopPropagation();
+
+            // when the user presses enter, save the new name
+            if (e.key == "Enter") {
+                if (inputType == "date")
+                {
+                    // update the element on screen
+                    el.innerText = formatDate(inputEl.value);
+
+                    // update the task attribute in memory
+                    task[key] = formatDate(inputEl.value);
+                }
+                else 
+                {
+                    // update the element on screen
+                    el.innerText = inputEl.value;
+
+                    // update the task attribute in memory
+                    task[key] = inputEl.value;
+                }
+               
+                // save the changes to the task that we just made
+                saveTasks();
+
+                // clear out currently editing since we manually reverted input element
+                currentlyEditing = null;
+            }
+            else if (e.key == "Escape") {
+                // revert the element back to its initial value
+                el.innerText = initialValue;
+
+                // clear out currently editing since we manually reverted input element
+                currentlyEditing = null;
+            }
+        }
+
+        // add the input element to the parent and focus on the input to start
+        el.appendChild(inputEl);
+        inputEl.focus();
     }
 }
 
@@ -444,7 +538,7 @@ function checkIfAllTasksDone()
     if (tasks.filter(x => x.doDate == today).length == 0) 
     {
         currentTasksSection.innerHTML += `
-            <div class="task" id="doneAllCurrentTasks">
+            <div class="message" id="doneAllCurrentTasks">
                 <h4 style="margin-top: 0; margin-bottom: 0">you have no more tasks for today :)</h4>
             </div>
         `;
@@ -463,7 +557,7 @@ function checkIfAllTasksDone()
     if (tasks.filter(x => new Date(x.doDate).getTime() > new Date().getTime()).length == 0) 
     {
         laterTasksSection.innerHTML += `
-            <div class="task" id="doneAllLaterTasks">
+            <div class="message" id="doneAllLaterTasks">
                 <h4 style="margin-top: 0; margin-bottom: 0">you have no more tasks for the foreseeable future :)</h4>
             </div>
         `;

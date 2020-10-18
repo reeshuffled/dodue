@@ -11,7 +11,7 @@
         <h1 class="text-center" style="margin: 0">dodue</h1>
 
         <p id="userGuideLink" class="text-center text-underline">how to use this app</p>
-        <section id="userGuide" style="display: none">
+        <section id="userGuide" class="message" style="display: none; margin-top: .5em;">
             <p>
                 hello! thank you so much for choosing to use dodue.
             </p>
@@ -26,6 +26,20 @@
 
             <p>
                 pro tip: you can press the "enter" key in any of the new task input fields to create a new task instead of having to press the "add task" button.
+            </p>
+
+            <hr>
+
+            <p>
+                to enter keyboard navigation mode, press the "tab" key (but not while you're editing any inputs or anything like that). once you're in keyboard navigation mode, you can exit by pressing the "escape" key.
+            </p>
+
+            <p>
+                you can move the task cursor by pressing the "up" or "down" arrow keys. press "d" to delete a task (it'll ask you to confirm to prevent any accidents).
+            </p>
+
+            <p>
+                if you have a task highlighted during the keyboard navigation mode, you can press the "1", "2", or "3" keys to edit the name, do date, or due date, respectively.
             </p>
 
             <p id="closeUserGuideLink" class="text-underline" onclick="this.parentNode.style.display='none'">
@@ -43,7 +57,7 @@
 
         <section id="taskAdd" class="text-center">
             <h4>
-                <input id="taskNameInput" type="text" placeholder="enter your task..."/>
+                <input id="taskNameInput" name="name" type="text" placeholder="enter your task..."/>
             </h4>
 
             <label for="doDate">do date:</label>

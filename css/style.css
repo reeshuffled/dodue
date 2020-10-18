@@ -62,11 +62,15 @@ h3.title {
     margin: 0;
 }
 
-.task {
+.task, .message {
     border: 1px solid black;
     border-radius: 4px;
     padding: 1em;
     margin-bottom: .5em;
+}
+
+.task.active {
+    border: 2px solid green;
 }
 
 .task button {

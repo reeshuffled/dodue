@@ -257,6 +257,8 @@ function bindTaskCreationActions()
 
     // allow the user to press enter in the task name field to create a new task to speed up task creation
     taskNameInput.onkeydown = e => {
+        e.stopPropagation();
+        
         if (e.key == "Enter")
         {
             createTask();

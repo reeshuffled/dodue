@@ -140,20 +140,29 @@ function bindKeyboardShortcuts()
                 if (e.key == "1")
                 {
                     el = currentlyActive.querySelector(`h3[for="name"]`);
-                    enableEditingOnClick(el, "text", "name", el.innerText, currentTask);
+                    enableEditingOnClick(el, "text", "name", currentTask);
                 }
                 else if (e.key == "2")
                 {
                     el = currentlyActive.querySelector(`span[for="doDate"]`);
-                    enableEditingOnClick(el, "date", "doDate", el.innerText, currentTask);
+                    enableEditingOnClick(el, "date", "doDate", currentTask);
                 }
                 else if (e.key == "3")
                 {
                     el = currentlyActive.querySelector(`span[for="dueDate"]`);
-                    enableEditingOnClick(el, "date", "dueDate", el.innerText, currentTask);
+                    enableEditingOnClick(el, "date", "dueDate", currentTask);
                 }
 
                 el.click();
+            }
+        }
+        else
+        {
+            if (e.key == "n")
+            {
+                e.preventDefault();
+                
+                taskNameInput.focus();
             }
         }
     }
@@ -314,23 +323,19 @@ function createTask()
  */
 function appendTask(task)
 {
-    const name = task.name;
-    const doDate  = task.doDate || "none";
-    const dueDate = task.dueDate || "none";
-
     const taskDiv = document.createElement("div");
     taskDiv.className = "task";
     
     const nameHeaderEl = document.createElement("h3");
     nameHeaderEl.setAttribute("for", "name");
-    enableEditingOnClick(nameHeaderEl, "text", "name", name, task);
+    enableEditingOnClick(nameHeaderEl, "text", "name", task);
     
     const doDateEl = document.createElement("p");
     doDateEl.innerHTML = `<b>do date: </b>`;
 
     const doDateSpan = document.createElement("span");
     doDateSpan.setAttribute("for", "doDate");
-    enableEditingOnClick(doDateSpan, "date", "doDate", doDate, task);
+    enableEditingOnClick(doDateSpan, "date", "doDate", task);
     
     doDateEl.appendChild(doDateSpan);
 
@@ -339,7 +344,7 @@ function appendTask(task)
 
     const dueDateSpan = document.createElement("span");
     dueDateSpan.setAttribute("for", "dueDate");
-    enableEditingOnClick(dueDateSpan, "date", "dueDate", dueDate, task);
+    enableEditingOnClick(dueDateSpan, "date", "dueDate", task);
 
     dueDateEl.appendChild(dueDateSpan);
 
@@ -365,8 +370,7 @@ function appendTask(task)
     
     // if a task's due date is before today, it is overdue
     const today = formatDate(new Date().toLocaleDateString("en-CA"));
-    if (new Date(task.doDate).getTime() < new Date(today).getTime()
-                || new Date(task.dueDate).getTime() < new Date(today).getTime())
+    if (new Date(task.doDate).getTime() < new Date(today).getTime())
     {
         document.getElementById("overdue").style.display = "";
         overdueTasksSection.appendChild(taskDiv);
@@ -392,10 +396,10 @@ function appendTask(task)
  * @param {*} initialValue 
  * @param {Object} task 
  */
-function enableEditingOnClick(el, inputType, key, initialValue, task)
+function enableEditingOnClick(el, inputType, key, task)
 {
     // set the initial text of the element
-    el.innerText = initialValue;
+    el.innerText = task[key];
 
     el.onclick = () => {
         // clear the nameHeader to make room for the input element to edit the name
@@ -408,11 +412,11 @@ function enableEditingOnClick(el, inputType, key, initialValue, task)
         // format value for date input, set as raw data else
         if (inputType == "date")
         {
-            inputEl.value = new Date(initialValue).toLocaleDateString("en-CA");
+            inputEl.value = new Date(task[key]).toLocaleDateString("en-CA");
         }
         else
         {
-            inputEl.value = initialValue;
+            inputEl.value = task[key];
         }
 
         // prevent user from editing multiple elements at the same time
@@ -446,12 +450,15 @@ function enableEditingOnClick(el, inputType, key, initialValue, task)
                 // save the changes to the task that we just made
                 saveTasks();
 
+                // re-render the tasks to be updated
+                renderTasks();
+
                 // clear out currently editing since we manually reverted input element
                 currentlyEditing = null;
             }
             else if (e.key == "Escape") {
                 // revert the element back to its initial value
-                el.innerText = initialValue;
+                el.innerText = task[key];
 
                 // clear out currently editing since we manually reverted input element
                 currentlyEditing = null;

@@ -255,6 +255,11 @@ function bindTaskCreationActions()
         }
     }
 
+    // exit any element that may be currently edited when trying to create a new task
+    taskNameInput.onclick = () => exitOtherEditing(null);
+    doDateInput.onclick = () => exitOtherEditing(null);
+    dueDateInput.onclick = () => exitOtherEditing(null);
+
     // allow the user to press enter in the task name field to create a new task to speed up task creation
     taskNameInput.onkeydown = e => {
         e.stopPropagation();

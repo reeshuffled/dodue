@@ -43,127 +43,101 @@ let currentlyEditing;
 function bindKeyboardShortcuts()
 {
     document.onkeydown = e => {
-        // if entering keyboard navigation mode
-        if (e.key == "Tab" && !keyboardNavigationMode)
+        const allTasks = [...document.querySelectorAll(".task")];
+
+        // if there are tasks, select the first task
+        if (e.key == "ArrowDown")
         {
-            // stop normal tab keypress behavior
+            // stop normal keypress behavior
             e.preventDefault();
 
-            // enable keyboard navigation mode
-            keyboardNavigationMode = true;
+            // if there are no tasks, the following code is not relevant
+            if (allTasks.length == 0) return;
 
-            // add active class to the first task on screen
-            const firstTask = document.querySelector(".task");
-            if (firstTask)
+            // select the first task if there are no other tasks selected
+            const currentlySelected = document.querySelector(".task.selected");
+            if (!currentlySelected)
             {
-                firstTask.classList.add("active");
+                selectTask(0);
+            }
+            else
+            {
+                selectTask(allTasks.indexOf(currentlySelected) + 1);
             }
         }
-
-        // register keypresses of special keys when in keyboard navigation mode
-        if (keyboardNavigationMode)
+        else if (e.key == "ArrowUp")
         {
-            // if exiting keyboard navigation mode
-            if (e.key == "Escape")
-            {
-                const currentlyActive = document.querySelector(".task.active");
-                currentlyActive.classList.remove("active");
+            // stop normal keypress behavior
+            e.preventDefault();
 
-                keyboardNavigationMode = false;
+            // if there are no tasks, the following code is not relevant
+            if (allTasks.length == 0) return;
+
+            // select the first task if there are no other tasks selected
+            const currentlySelected = document.querySelector(".task.selected");
+            if (!currentlySelected)
+            {
+                selectTask(allTasks.length - 1);
             }
-            // if navigating downwards
-            else if (e.key == "ArrowDown")
+            else
+            {
+                selectTask(allTasks.indexOf(currentlySelected) - 1);
+            }
+        }
+        else if (e.key == "Escape")
+        {
+            deselectTasks();
+        }
+        // if trying to delete a task
+        else if (e.key == "d")
+        {
+            if (confirm("are you sure you want to delete this task?"))
             {
                 // get all tasks and the currently active task
-                const allTasks = [...document.querySelectorAll(".task")];
-                const currentlyActive = document.querySelector(".task.active");
-                
-                // get the index of the next task and see if it can advance to a next task
-                const nextIndex = allTasks.indexOf(currentlyActive) + 1;
-                if (nextIndex < allTasks.length)
-                {
-                    // de-select the currently selected task
-                    currentlyActive.classList.remove("active");
+                const currentlySelected = document.querySelector(".task.selected");
 
-                    // select the next task
-                    allTasks[nextIndex].classList.add("active");
-                }
-            }
-            // if navigating upwards
-            else if (e.key == "ArrowUp")
-            {
-                // get all tasks and the currently active task
-                const allTasks = [...document.querySelectorAll(".task")];
-                const currentlyActive = document.querySelector(".task.active");
+                // remove the task
+                tasks.splice(allTasks.indexOf(currentlySelected), 1);
 
-                // get the index of the next task and see if it can advance to a next task
-                const nextIndex = allTasks.indexOf(currentlyActive) - 1;
-                if (nextIndex >= 0)
-                {
-                    // de-select the currently selected task
-                    currentlyActive.classList.remove("active");
-
-                    // select the next task
-                    allTasks[nextIndex].classList.add("active");
-                }
-            }
-            // if trying to delete a task
-            else if (e.key == "d")
-            {
-                if (confirm("are you sure you want to delete this task?"))
-                {
-                    // get all tasks and the currently active task
-                    const allTasks = [...document.querySelectorAll(".task")];
-                    const currentlyActive = document.querySelector(".task.active");
-
-                    // remove the task
-                    tasks.splice(allTasks.indexOf(currentlyActive), 1);
-
-                    // commit to memory the latest action
-                    saveTasks();
+                // commit to memory the latest action
+                saveTasks();
  
-                    // re-render tasks
-                    renderTasks();
-                }
-            }
-            // if trying to edit a task attribute
-            else if (e.key == "1" || e.key == "2" || e.key == "3")
-            {
-                e.preventDefault();
-
-                const allTasks = [...document.querySelectorAll(".task")];
-                const currentlyActive = document.querySelector(".task.active");
-                const currentTask = tasks[allTasks.indexOf(currentlyActive)];
-
-                let el;
-
-                if (e.key == "1")
-                {
-                    el = currentlyActive.querySelector(`h3[for="name"]`);
-                    enableEditingOnClick(el, "text", "name", currentTask);
-                }
-                else if (e.key == "2")
-                {
-                    el = currentlyActive.querySelector(`span[for="doDate"]`);
-                    enableEditingOnClick(el, "date", "doDate", currentTask);
-                }
-                else if (e.key == "3")
-                {
-                    el = currentlyActive.querySelector(`span[for="dueDate"]`);
-                    enableEditingOnClick(el, "date", "dueDate", currentTask);
-                }
-
-                el.click();
+                // re-render tasks
+                renderTasks();
             }
         }
-        else
+        // if trying to focus editing to new task name input
+        else if (e.key == "n")
         {
-            if (e.key == "n")
-            {
-                e.preventDefault();
+            e.preventDefault();
+            
+            deselectTasks();
                 
-                taskNameInput.focus();
+            taskNameInput.focus();
+        }
+        // if trying to edit a task attribute
+        else if (e.key == "1" || e.key == "2" || e.key == "3") {
+            e.preventDefault();
+
+            const currentlySelected = document.querySelector(".task.selected");
+            const currentTask = tasks[allTasks.indexOf(currentlySelected)];
+
+            let el;
+
+            if (e.key == "1") {
+                el = currentlySelected.querySelector(`h3[for="name"]`);
+                enableEditingOnClick(el, "text", "name", currentTask);
             }
+            else if (e.key == "2") {
+                el = currentlySelected.querySelector(`span[for="doDate"]`);
+                enableEditingOnClick(el, "date", "doDate", currentTask);
+            }
+            else if (e.key == "3") {
+                el = currentlySelected.querySelector(`span[for="dueDate"]`);
+                enableEditingOnClick(el, "date", "dueDate", currentTask);
+            }
+
+            el.click();
         }
     }
 }
@@ -332,6 +306,13 @@ function appendTask(task)
 {
     const taskDiv = document.createElement("div");
     taskDiv.className = "task";
+
+    taskDiv.onclick = () => {
+        // get all tasks
+        const allTasks = [...document.querySelectorAll(".task")];
+
+        selectTask(allTasks.indexOf(taskDiv));
+    }
     
     const nameHeaderEl = document.createElement("h3");
     nameHeaderEl.setAttribute("for", "name");
@@ -395,6 +376,39 @@ function appendTask(task)
 }
 
 /**
+ * Add the selected class to a task that allows for it to be interacted with other keyboard shortcuts.
+ * @param {Number} index 
+ */
+function selectTask(index)
+{
+    // get all tasks
+    const allTasks = [...document.querySelectorAll(".task")];
+
+    // if task index is valid, select the task div
+    if (index >= 0 && index < allTasks.length)
+    {
+        // deselect previous task
+        deselectTasks();
+
+        // select the next task
+        allTasks[index].classList.add("selected");
+    }
+}
+
+/**
+ * Deselect any previously selected task.
+ */
+function deselectTasks()
+{
+    // de-select the currently selected task
+    const currentlySelected = document.querySelector(".task.selected");
+    if (currentlySelected)
+    {
+        currentlySelected.classList.remove("selected");
+    }
+}
+
+/**
  * When you click the element, it will replace it with an input element that allows you to
  * manually edit the value.
  * @param {HTMLElement} el 
@@ -408,7 +422,10 @@ function enableEditingOnClick(el, inputType, key, task)
     // set the initial text of the element
     el.innerText = task[key];
 
-    el.onclick = () => {
+    el.onclick = e => {
+        // clicks are also captured at the task div level, but we don't want input clicks to register as task clicks
+        e.stopPropagation();
+
         // clear the nameHeader to make room for the input element to edit the name
         el.innerHTML = "";
 
@@ -419,7 +436,7 @@ function enableEditingOnClick(el, inputType, key, task)
         // format value for date input, set as raw data else
         if (inputType == "date")
         {
-            inputEl.value = new Date(task[key]).toLocaleDateString("en-CA");
+            inputEl.value = new Date(task[key]).toLocaleDateString("en-CA") ;
         }
         else
         {
@@ -608,7 +625,7 @@ function saveTasks()
 }
 
 /**
- * Get saved tasks from localStorage and display them on-screen.
+ * Get saved tasks from localStorage and renders them.
  */
 function fetchTasks()
 {
@@ -627,6 +644,7 @@ function fetchTasks()
  * Take the date format from the date input and transform it into MM/DD/YYYY as a more stable serializable 
  * date format, as well as being the preferred format of Americans.
  * @param {String} dateString 
+ * @return {String} formattedDateString
  */
 function formatDate(dateString)
 {

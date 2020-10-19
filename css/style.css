@@ -69,7 +69,7 @@ h3.title {
     margin-bottom: .5em;
 }
 
-.task.active {
+.task.selected {
     border: 2px solid green;
 }
 

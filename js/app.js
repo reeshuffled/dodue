@@ -44,8 +44,9 @@ function bindKeyboardShortcuts()
 {
     document.onkeydown = e => {
         const allTasks = [...document.querySelectorAll(".task")];
+        const currentlySelected = document.querySelector(".task.selected");
 
-        // if there are tasks, select the first task
+        // if no selection there are tasks, select the first task, otherwise move down tasks list
         if (e.key == "ArrowDown")
         {
             // stop normal keypress behavior
@@ -55,7 +56,6 @@ function bindKeyboardShortcuts()
             if (allTasks.length == 0) return;
 
             // select the first task if there are no other tasks selected
-            const currentlySelected = document.querySelector(".task.selected");
             if (!currentlySelected)
             {
                 selectTask(0);
@@ -65,6 +65,7 @@ function bindKeyboardShortcuts()
                 selectTask(allTasks.indexOf(currentlySelected) + 1);
             }
         }
+        // if no selection and there are tasks, select the last task, otherwise move up tasks list
         else if (e.key == "ArrowUp")
         {
             // stop normal keypress behavior
@@ -74,7 +75,6 @@ function bindKeyboardShortcuts()
             if (allTasks.length == 0) return;
 
             // select the first task if there are no other tasks selected
-            const currentlySelected = document.querySelector(".task.selected");
             if (!currentlySelected)
             {
                 selectTask(allTasks.length - 1);
@@ -84,6 +84,7 @@ function bindKeyboardShortcuts()
                 selectTask(allTasks.indexOf(currentlySelected) - 1);
             }
         }
+        // exit selection mode
         else if (e.key == "Escape")
         {
             deselectTasks();
@@ -91,17 +92,19 @@ function bindKeyboardShortcuts()
         // if trying to delete a task
         else if (e.key == "d")
         {
-            if (confirm("are you sure you want to delete this task?"))
-            {
-                // get all tasks and the currently active task
-                const currentlySelected = document.querySelector(".task.selected");
+            // stop normal keypress behavior
+            e.preventDefault();
 
+            if (!currentlySelected) return;
+
+            if (confirm("are you sure you want to delete this task?")) 
+            {
                 // remove the task
                 tasks.splice(allTasks.indexOf(currentlySelected), 1);
 
                 // commit to memory the latest action
                 saveTasks();
- 
+
                 // re-render tasks
                 renderTasks();
             }
@@ -109,6 +112,7 @@ function bindKeyboardShortcuts()
         // if trying to focus editing to new task name input
         else if (e.key == "n")
         {
+            // stop normal keypress behavior
             e.preventDefault();
             
             deselectTasks();
@@ -117,22 +121,26 @@ function bindKeyboardShortcuts()
         }
         // if trying to edit a task attribute
         else if (e.key == "1" || e.key == "2" || e.key == "3") {
+            // stop normal keypress behavior
             e.preventDefault();
 
-            const currentlySelected = document.querySelector(".task.selected");
+            if (!currentlySelected) return;
+
             const currentTask = tasks[allTasks.indexOf(currentlySelected)];
 
             let el;
-
-            if (e.key == "1") {
+            if (e.key == "1") 
+            {
                 el = currentlySelected.querySelector(`h3[for="name"]`);
                 enableEditingOnClick(el, "text", "name", currentTask);
             }
-            else if (e.key == "2") {
+            else if (e.key == "2") 
+            {
                 el = currentlySelected.querySelector(`span[for="doDate"]`);
                 enableEditingOnClick(el, "date", "doDate", currentTask);
             }
-            else if (e.key == "3") {
+            else if (e.key == "3") 
+            {
                 el = currentlySelected.querySelector(`span[for="dueDate"]`);
                 enableEditingOnClick(el, "date", "dueDate", currentTask);
             }

@@ -51,12 +51,6 @@ h3.title {
     display: none;
 }
 
-@media only screen and (max-width: 600px) {
-    #mobileNewline {
-        display: block;
-        margin: .5em;
-    }
-}
 
 #taskAdd h4 {
     margin: 0;
@@ -74,7 +68,19 @@ h3.title {
 }
 
 .task button {
+    display: none;
     margin-top: .5em;
+}
+
+@media only screen and (max-width: 600px) {
+    #mobileNewline {
+        display: block;
+        margin: .5em;
+    }
+
+    .task button {
+        display: block;
+    }
 }
 
 .task h3 {

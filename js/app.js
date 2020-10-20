@@ -801,7 +801,7 @@ function fetchPreferences()
     if (!preferences.showLaterTasks)
     {
         // show how many tasks are in that section
-        const laterTasks = document.querySelectorAll("#currentTasks .task");
+        const laterTasks = document.querySelectorAll("#laterTasks .task");
         doLaterHeader.innerText += ` (${laterTasks.length})`;
 
         laterTasksSection.style.display = "none";

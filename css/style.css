@@ -23,6 +23,10 @@ textarea:focus, input:focus{
     text-decoration: underline;
 }
 
+.mb-0 {
+    margin-bottom: 0;
+}
+
 h3.title {
     margin-bottom: .25em;
 }

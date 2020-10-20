@@ -1,9 +1,13 @@
 // localStorage key for the tasks list
 const STORAGE_LOCATION = "tasks";
+const PREFERENCES_LOCATION = "preferences";
 
 // references to HTML elements
 const userGuideLink = document.getElementById("userGuideLink");
 const userGuideSection = document.getElementById("userGuide");
+const overdueHeader = document.getElementById("overdueHeader");
+const doNowHeader = document.getElementById("doNowHeader");
+const doLaterHeader = document.getElementById("doLaterHeader");
 const overdueTasksSection = document.getElementById("overdueTasks");
 const currentTasksSection = document.getElementById("currentTasks");
 const laterTasksSection = document.getElementById("laterTasks");
@@ -13,8 +17,16 @@ const doDateInput = document.getElementById("doDateInput");
 const dueDateInput = document.getElementById("dueDateInput");
 const laterTasksToggle = document.getElementById("laterTasksToggle");
 
+const DEFAULT_PREFERENCES = {
+    confirmKeyboardDeletes: true,
+    showOverdueTasks: true,
+    showCurrentTasks: true,
+    showLaterTasks: true
+};
+
 // tasks list
 const tasks = [];
+let preferences = {};
 
 // if the user is currently in keyboard navigation mode
 let keyboardNavigationMode = false;
@@ -31,10 +43,13 @@ let currentlyEditing;
     setDefaultDates();
 
     bindTaskCreationActions();
-    bindUserGuideToggle();
     bindKeyboardShortcuts();
+    bindUserGuideToggle();
 
     fetchTasks();
+
+    fetchPreferences();
+    bindHeaderToggles();
 })();
 
 /**
@@ -206,6 +221,93 @@ function bindUserGuideToggle()
 }
 
 /**
+ * Allow the user to click on the task section headers to toggle visibility of the section.
+ * When a section is hidden, the header will display the number of tasks within that section.
+ */
+function bindHeaderToggles()
+{
+    overdueHeader.onclick = () => {
+        // toggling to visible
+        if (overdueTasksSection.style.display == "none")
+        {
+            // get rid of task count and revert back to default
+            overdueHeader.innerText = "overdue";
+
+            // show the overdue tasks section
+            overdueTasksSection.style.display = "";
+            preferences.showOverdueTasks = true;
+        }
+        // toggling to hidden
+        else
+        {
+            // show how many tasks are in that section
+            const overdueTasks = document.querySelectorAll("#overdueTasks .task");
+            overdueHeader.innerText += ` (${overdueTasks.length})`;
+
+            // hide the overdue tasks section
+            overdueTasksSection.style.display = "none";
+            preferences.showOverdueTasks = false;
+        }
+
+        savePreferences();
+    }
+
+    doNowHeader.onclick = () => {
+        // toggling to visible
+        if (currentTasksSection.style.display == "none")
+        {
+            // get rid of task count and revert back to default
+            doNowHeader.innerText = "do now";
+
+            // show the current tasks section
+            currentTasksSection.style.display = "";
+            preferences.showCurrentTasks = true;
+        }
+        // toggling to hidden
+        else
+        {
+            // show how many tasks are in that section
+            const currentTasks = document.querySelectorAll("#currentTasks .task");
+            doNowHeader.innerText += ` (${currentTasks.length})`;
+
+            // hide the current tasks section
+            currentTasksSection.style.display = "none";
+            preferences.showCurrentTasks = false;
+        }
+
+        // save preferences so visibility persists on reload
+        savePreferences();
+    }
+
+    doLaterHeader.onclick = () => {
+        // toggling to visible
+        if (laterTasksSection.style.display === "none") 
+        {
+            // get rid of the task count and revert back to default
+            doLaterHeader.innerText = "do later";
+
+            // show the later tasks section
+            laterTasksSection.style.display = "";
+            preferences.showLaterTasks = true;
+        }
+        // toggling to hidden
+        else
+        {
+            // show how many tasks are in that section
+            const laterTasks = document.querySelectorAll("#laterTasks .task");
+            doLaterHeader.innerText += ` (${laterTasks.length})`;
+
+            // hide the later tasks section
+            laterTasksSection.style.display = "none";
+            preferences.showLaterTasks = false;
+        }
+
+        // save preferences so visibility persists on reload
+        savePreferences();
+    }
+}
+
+/**
  * Add the onclick function to the task creation button UI component.
  */
 function bindTaskCreationActions() 
@@ -254,6 +356,8 @@ function bindTaskCreationActions()
 
     // allow the user to press enter in the task do date field to create a new task to speed up task creation
     doDateInput.onkeydown = e => {
+        e.stopPropagation();
+
         if (e.key == "Enter")
         {
             createTask();
@@ -262,6 +366,8 @@ function bindTaskCreationActions()
 
     // allow the user to press enter in the task due date field to create a new task to speed up task creation
     dueDateInput.onkeydown = e => {
+        e.stopPropagation();
+
         if (e.key == "Enter")
         {
             createTask();
@@ -633,6 +739,14 @@ function saveTasks()
 }
 
 /**
+ * Save the preferences key-value object to localStorage.
+ */
+function savePreferences()
+{
+    localStorage.setItem(PREFERENCES_LOCATION, JSON.stringify(preferences));
+}
+
+/**
  * Get saved tasks from localStorage and renders them.
  */
 function fetchTasks()
@@ -646,6 +760,52 @@ function fetchTasks()
 
     // render tasks that have just been pulled from storage
     renderTasks();
+}
+
+function fetchPreferences()
+{
+    // load preferences from localStorage
+    if (localStorage.getItem(PREFERENCES_LOCATION))
+    {
+        preferences = JSON.parse(localStorage.getItem(PREFERENCES_LOCATION));
+    }
+    // if no preferences, use default preferences
+    else
+    {
+        preferences = JSON.parse(JSON.stringify(DEFAULT_PREFERENCES));
+
+        savePreferences();
+    }
+
+    // if overdue tasks section is hidden
+    const overdueTasks = document.querySelectorAll("#overdueTasks .task");
+    if (overdueTasks.length && !preferences.showOverdueTasks)
+    {
+        // show how many tasks are in that section
+        overdueHeader.innerText += ` (${overdueTasks.length})`;
+
+        overdueTasksSection.style.display = "none";
+    }
+
+    // if current tasks section is hidden
+    if (!preferences.showCurrentTasks)
+    {
+        // show how many tasks are in that section
+        const currentTasks = document.querySelectorAll("#currentTasks .task");
+        doNowHeader.innerText += ` (${currentTasks.length})`;
+
+        currentTasksSection.style.display = "none";
+    }
+
+    // if later tasks section is hidden
+    if (!preferences.showLaterTasks)
+    {
+        // show how many tasks are in that section
+        const laterTasks = document.querySelectorAll("#currentTasks .task");
+        doLaterHeader.innerText += ` (${laterTasks.length})`;
+
+        laterTasksSection.style.display = "none";
+    }
 }
 
 /**

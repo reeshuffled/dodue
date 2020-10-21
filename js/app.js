@@ -586,7 +586,8 @@ function enableEditingOnClick(el, inputType, key, task)
             e.stopPropagation();
 
             // when the user presses enter, save the new name
-            if (e.key == "Enter") {
+            if (e.key == "Enter") 
+            {
                 if (inputType == "date")
                 {
                     // update the element on screen
@@ -613,12 +614,33 @@ function enableEditingOnClick(el, inputType, key, task)
                 // clear out currently editing since we manually reverted input element
                 currentlyEditing = null;
             }
-            else if (e.key == "Escape") {
+            else if (e.key == "Escape") 
+            {
                 // revert the element back to its initial value
                 el.innerText = task[key];
 
                 // clear out currently editing since we manually reverted input element
                 currentlyEditing = null;
+            }
+            // change a date field to today
+            else if (e.key == "t")
+            {
+                if (inputType == "date")
+                {
+                    const today = new Date().toLocaleDateString("en-CA");
+                    inputEl.value = today;
+
+                    task[key] = formatDate(today);
+
+                    // save the changes to the task that we just made
+                    saveTasks();
+
+                    // re-render the tasks to be updated
+                    renderTasks();
+
+                    // clear out currently editing since we manually reverted input element
+                    currentlyEditing = null;
+                }
             }
         }
 

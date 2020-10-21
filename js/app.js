@@ -61,6 +61,13 @@ function bindKeyboardShortcuts()
         const allTasks = [...document.querySelectorAll(".task")];
         const currentlySelected = document.querySelector(".task.selected");
 
+        // if is a number key
+        if (!isNaN(e.key))
+        {
+            // the 1 key will select the first task, or 0th element, the zero key will not do anything because
+            // of how it is positioned on the keyboard 
+            selectTask(parseInt(e.key, 10) - 1);
+        }
         // if no selection there are tasks, select the first task, otherwise move down tasks list
         if (e.key == "ArrowDown")
         {
@@ -135,7 +142,7 @@ function bindKeyboardShortcuts()
             taskNameInput.focus();
         }
         // if trying to edit a task attribute
-        else if (e.key == "1" || e.key == "2" || e.key == "3") {
+        else if (e.key == "q" || e.key == "w" || e.key == "e") {
             // stop normal keypress behavior
             e.preventDefault();
 
@@ -144,17 +151,17 @@ function bindKeyboardShortcuts()
             const currentTask = tasks[allTasks.indexOf(currentlySelected)];
 
             let el;
-            if (e.key == "1") 
+            if (e.key == "q") 
             {
                 el = currentlySelected.querySelector(`h3[for="name"]`);
                 enableEditingOnClick(el, "text", "name", currentTask);
             }
-            else if (e.key == "2") 
+            else if (e.key == "w") 
             {
                 el = currentlySelected.querySelector(`span[for="doDate"]`);
                 enableEditingOnClick(el, "date", "doDate", currentTask);
             }
-            else if (e.key == "3") 
+            else if (e.key == "e") 
             {
                 el = currentlySelected.querySelector(`span[for="dueDate"]`);
                 enableEditingOnClick(el, "date", "dueDate", currentTask);
@@ -352,6 +359,10 @@ function bindTaskCreationActions()
         {
             createTask();
         }
+        else if (e.key == "Escape")
+        {
+            taskNameInput.blur();
+        }
     }
 
     // allow the user to press enter in the task do date field to create a new task to speed up task creation
@@ -362,6 +373,10 @@ function bindTaskCreationActions()
         {
             createTask();
         }
+        else if (e.key == "Escape")
+        {
+            doDateInput.blur();
+        }
     }
 
     // allow the user to press enter in the task due date field to create a new task to speed up task creation
@@ -371,6 +386,10 @@ function bindTaskCreationActions()
         if (e.key == "Enter")
         {
             createTask();
+        }
+        else if (e.key == "Escape")
+        {
+            dueDateInput.blur();
         }
     }
 }
@@ -762,6 +781,9 @@ function fetchTasks()
     renderTasks();
 }
 
+/**
+ * Get saved preferences to provide same experience on refresh.
+ */
 function fetchPreferences()
 {
     // load preferences from localStorage

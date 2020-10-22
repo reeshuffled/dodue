@@ -48,7 +48,7 @@ let currentlyEditing;
 
     fetchTasks();
 
-    fetchPreferences();
+    loadPreferences();
     bindHeaderToggles();
 })();
 
@@ -168,61 +168,6 @@ function bindKeyboardShortcuts()
             }
 
             el.click();
-        }
-    }
-}
-
-/**
- * Check to see if dark mode should be enabled or disabled on the page.
- */
-function checkEnableDarkMode()
-{
-    // from: https://github.com/nickdeny/darkmode-js/blob/master/darkmode.js
-    const isDarkMode = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-
-    // get favicon data
-    const faviconEl = document.querySelector("link[rel*='icon']");
-    const currentFavicon = faviconEl.href;
-    const newFavicon = isDarkMode ? "img/dark-mode-favicon.png" : "img/light-mode-favicon.png";
-    
-    if (isDarkMode)
-    {
-        // from: https://dev.to/jamiepo/go-dark-mode-with-css-filter-2p6p
-        document.body.style.filter = "invert(100%) hue-rotate(180deg)";
-        document.body.style.backgroundColor = "black";
-    }
-    else
-    {
-        document.body.style.filter = "";
-        document.body.style.backgroundColor = "white";
-    }
-
-    // change the favicon only if the mode has switchec
-    if (currentFavicon != newFavicon)
-    {
-        document.head.removeChild(faviconEl);
-
-        const newFaviconEl = document.createElement("link");
-        newFaviconEl.rel = "shortcut icon";
-        newFaviconEl.href = newFavicon;
-
-        document.head.appendChild(newFaviconEl);
-    }
-}
-
-/**
- * Bind the onclick action to the user guide link to toggle visibility of help text.
- */
-function bindUserGuideToggle() 
-{
-    userGuideLink.onclick = () => {
-        if (userGuideSection.style.display == "none")
-        {
-            userGuideSection.style.display = "";
-        }
-        else
-        {
-            userGuideSection.style.display = "none";
         }
     }
 }
@@ -358,6 +303,8 @@ function bindTaskCreationActions()
         if (e.key == "Enter")
         {
             createTask();
+
+            taskNameInput.focus();
         }
         else if (e.key == "Escape")
         {
@@ -372,6 +319,8 @@ function bindTaskCreationActions()
         if (e.key == "Enter")
         {
             createTask();
+
+            taskNameInput.focus();
         }
         else if (e.key == "Escape")
         {
@@ -553,7 +502,14 @@ function deselectTasks()
 function enableEditingOnClick(el, inputType, key, task)
 {
     // set the initial text of the element
-    el.innerText = task[key];
+    if (inputType == "date") 
+    {
+        el.innerText = humanizeDate(task[key]);
+    }
+    else 
+    {
+        el.innerText = task[key];
+    }
 
     el.onclick = e => {
         // clicks are also captured at the task div level, but we don't want input clicks to register as task clicks
@@ -591,7 +547,7 @@ function enableEditingOnClick(el, inputType, key, task)
                 if (inputType == "date")
                 {
                     // update the element on screen
-                    el.innerText = formatDate(inputEl.value);
+                    el.innerText = humanizeDate(inputEl.value);
 
                     // update the task attribute in memory
                     task[key] = formatDate(inputEl.value);
@@ -617,7 +573,14 @@ function enableEditingOnClick(el, inputType, key, task)
             else if (e.key == "Escape") 
             {
                 // revert the element back to its initial value
-                el.innerText = task[key];
+                if (inputType == "date")
+                {
+                    el.innerText = humanizeDate(task[key]);
+                }
+                else
+                {
+                    el.innerText = task[key];
+                }
 
                 // clear out currently editing since we manually reverted input element
                 currentlyEditing = null;
@@ -651,6 +614,47 @@ function enableEditingOnClick(el, inputType, key, task)
 }
 
 /**
+ * Add a relative time string next to a date string.
+ * @param {String} dateString 
+ * @returns {String} humanizedDate
+ */
+function humanizeDate(dateString)
+{
+    // https://stackoverflow.com/questions/2627473/how-to-calculate-the-number-of-days-between-two-dates
+    const today = new Date(), date = new Date(dateString);
+    const ONE_DAY = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
+    const diffDays = Math.ceil((date - today) / ONE_DAY);
+
+    let humanization;
+
+    if (diffDays == 0) 
+    {
+        humanization = "today";
+    }
+    else if (diffDays == 1) 
+    {
+        humanization = "tomorrow";
+    }
+    else if (diffDays >= 30) 
+    {
+        if (diffDays >= 60) 
+        {
+            humanization = `in about ${Math.round(diffDays / 30)} months`;
+        }
+        else 
+        {
+            humanization = "in about a month";
+        }
+    }
+    else 
+    {
+        humanization = `in ${diffDays} days`;
+    }
+
+    return `${dateString} (${humanization})`;
+}
+
+/**
  * If we are currently editing another input, revert back to text.
  * @param {HTMLElement} inputEl 
  */
@@ -661,7 +665,7 @@ function exitOtherEditing(inputEl)
     {
         if (currentlyEditing.type == "date")
         {
-            currentlyEditing.parentNode.innerText = formatDate(currentlyEditing.value);
+            currentlyEditing.parentNode.innerText = humanizeDate(currentlyEditing.value);
         }
         else
         {
@@ -670,6 +674,61 @@ function exitOtherEditing(inputEl)
     }
  
     currentlyEditing = inputEl;
+}
+
+/**
+ * Check to see if dark mode should be enabled or disabled on the page.
+ */
+function checkEnableDarkMode()
+{
+    // from: https://github.com/nickdeny/darkmode-js/blob/master/darkmode.js
+    const isDarkMode = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+    // get favicon data
+    const faviconEl = document.querySelector("link[rel*='icon']");
+    const currentFavicon = faviconEl.href;
+    const newFavicon = isDarkMode ? "img/dark-mode-favicon.png" : "img/light-mode-favicon.png";
+    
+    if (isDarkMode)
+    {
+        // from: https://dev.to/jamiepo/go-dark-mode-with-css-filter-2p6p
+        document.body.style.filter = "invert(100%) hue-rotate(180deg)";
+        document.body.style.backgroundColor = "black";
+    }
+    else
+    {
+        document.body.style.filter = "";
+        document.body.style.backgroundColor = "white";
+    }
+
+    // change the favicon only if the mode has switchec
+    if (currentFavicon != newFavicon)
+    {
+        document.head.removeChild(faviconEl);
+
+        const newFaviconEl = document.createElement("link");
+        newFaviconEl.rel = "shortcut icon";
+        newFaviconEl.href = newFavicon;
+
+        document.head.appendChild(newFaviconEl);
+    }
+}
+
+/**
+ * Bind the onclick action to the user guide link to toggle visibility of help text.
+ */
+function bindUserGuideToggle() 
+{
+    userGuideLink.onclick = () => {
+        if (userGuideSection.style.display == "none")
+        {
+            userGuideSection.style.display = "";
+        }
+        else
+        {
+            userGuideSection.style.display = "none";
+        }
+    }
 }
 
 /**
@@ -806,7 +865,7 @@ function fetchTasks()
 /**
  * Get saved preferences to provide same experience on refresh.
  */
-function fetchPreferences()
+function loadPreferences()
 {
     // load preferences from localStorage
     if (localStorage.getItem(PREFERENCES_LOCATION))

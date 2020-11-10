@@ -297,18 +297,19 @@ function bindTaskCreationActions()
         oldDoDate = doDateInput.value;
     }
 
+    // this code prevents the user from being able to type in dates in the dueDateInput so it has been removed
     // prevent due date from being set to a date before the do date
-    let oldDueDate = dueDateInput.value;
-    dueDateInput.onchange = e => {
-        if (new Date(formatDate(dueDateInput.value)).getTime() < new Date(formatDate(doDateInput.value)).getTime()) 
-        {
-            dueDateInput.value = oldDueDate;
-        }
-        else
-        {
-            oldDueDate = dueDateInput.value;
-        }
-    }
+    // let oldDueDate = dueDateInput.value;
+    // dueDateInput.onchange = e => {
+    //     if (new Date(formatDate(dueDateInput.value)).getTime() < new Date(formatDate(doDateInput.value)).getTime()) 
+    //     {
+    //         dueDateInput.value = oldDueDate;
+    //     }
+    //     else
+    //     {
+    //         oldDueDate = dueDateInput.value;
+    //     }
+    // }
 
     // exit any element that may be currently edited when trying to create a new task
     taskNameInput.onclick = () => exitOtherEditing(null);
@@ -665,9 +666,9 @@ function humanizeDate(dateString)
             const weekDayNum = date.getDay();
             const DAYS_OF_WEEK = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
-            if (weekDayNum < today.getDay())
+            if (weekDayNum <= today.getDay())
             {
-                humanization = `this coming ${DAYS_OF_WEEK[date.getDay()]}`;
+                humanization = `next ${DAYS_OF_WEEK[date.getDay()]}`;
             }
             else 
             {

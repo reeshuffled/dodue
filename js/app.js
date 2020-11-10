@@ -142,7 +142,8 @@ function bindKeyboardShortcuts()
             taskNameInput.focus();
         }
         // if trying to edit a task attribute
-        else if (e.key == "q" || e.key == "w" || e.key == "e") {
+        else if (e.key == "q" || e.key == "w" || e.key == "e") 
+        {
             // stop normal keypress behavior
             e.preventDefault();
 
@@ -168,6 +169,24 @@ function bindKeyboardShortcuts()
             }
 
             el.click();
+        }
+        else if (e.key == "t")
+        {
+            // stop normal keypress behavior
+            e.preventDefault();
+
+            if (!currentlySelected) return;
+
+            const currentTask = tasks[allTasks.indexOf(currentlySelected)];
+
+            const today = new Date().toLocaleDateString("en-CA");
+            currentTask.doDate = formatDate(today);
+
+            // save the changes to the task that we just made
+            saveTasks();
+
+            // re-render the tasks to be updated
+            renderTasks();
         }
     }
 }
@@ -592,17 +611,6 @@ function enableEditingOnClick(el, inputType, key, task)
                 {
                     const today = new Date().toLocaleDateString("en-CA");
                     inputEl.value = today;
-
-                    task[key] = formatDate(today);
-
-                    // save the changes to the task that we just made
-                    saveTasks();
-
-                    // re-render the tasks to be updated
-                    renderTasks();
-
-                    // clear out currently editing since we manually reverted input element
-                    currentlyEditing = null;
                 }
             }
         }
@@ -624,6 +632,9 @@ function humanizeDate(dateString)
     const today = new Date(), date = new Date(dateString);
     const ONE_DAY = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
     const diffDays = Math.ceil((date - today) / ONE_DAY);
+
+    // always convert to MM/DD/YYYY format
+    dateString = date.toLocaleDateString("es-PA");
 
     let humanization;
 
@@ -648,7 +659,30 @@ function humanizeDate(dateString)
     }
     else 
     {
-        humanization = `in ${diffDays} days`;
+        // if is this week
+        if (diffDays <= 7 && diffDays > 0)
+        {
+            const weekDayNum = date.getDay();
+            const DAYS_OF_WEEK = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+
+            if (weekDayNum < today.getDay())
+            {
+                humanization = `this coming ${DAYS_OF_WEEK[date.getDay()]}`;
+            }
+            else 
+            {
+                humanization = `this ${DAYS_OF_WEEK[date.getDay()]}`;
+            }
+        }
+        // if already passed, show days ago
+        else if (diffDays < 0)
+        {
+            humanization = `${Math.abs(diffDays)} days ago`;
+        }
+        else
+        {
+            humanization = `in ${diffDays} days`;
+        }
     }
 
     return `${dateString} (${humanization})`;

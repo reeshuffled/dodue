@@ -723,18 +723,6 @@ function checkEnableDarkMode()
     const faviconEl = document.querySelector("link[rel*='icon']");
     const currentFavicon = faviconEl.href;
     const newFavicon = isDarkMode ? "img/dark-mode-favicon.png" : "img/light-mode-favicon.png";
-    
-    if (isDarkMode)
-    {
-        // from: https://dev.to/jamiepo/go-dark-mode-with-css-filter-2p6p
-        document.body.style.filter = "invert(100%) hue-rotate(180deg)";
-        document.body.style.backgroundColor = "black";
-    }
-    else
-    {
-        document.body.style.filter = "";
-        document.body.style.backgroundColor = "white";
-    }
 
     // change the favicon only if the mode has switchec
     if (currentFavicon != newFavicon)

@@ -2,6 +2,14 @@ html {
     font-family: Arial, Helvetica, sans-serif;
 }
 
+@media (prefers-color-scheme: dark) {
+    /* from: https://dev.to/jamiepo/go-dark-mode-with-css-filter-2p6p */
+    body {
+        filter: invert(100%) hue-rotate(180deg);
+        background: black;
+    }
+}
+
 label {
     font-weight: bold;
 }
